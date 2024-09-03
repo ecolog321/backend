@@ -1,8 +1,31 @@
-const http = require("http");
+/* const http = require("http");
 const fs = require("fs");
-const path = require("path");
+const path = require("path"); */
+const express = require("express");
+const dotenv=require('dotenv');
+const userRouter=require("./routes/users")
+const logger = require("./middlewares/logger")
 
-const getUsers = () => {
+dotenv.config();
+
+const app = express();
+
+const { 
+  PORT = 3000, 
+  API_URL = "http://127.0.0.1"
+} = process.env;
+
+app.listen(PORT, () => {
+  console.log(`Server run on ${API_URL}:${PORT}`);
+});
+
+
+app.use(userRouter);
+
+
+
+
+/* const getUsers = () => {
   const filePath = path.join(__dirname, "./data/users.json");
   return fs.readFileSync(filePath);
 };
@@ -21,13 +44,13 @@ const server = http.createServer((request, response) => {
     return;
   }
 
-  if (!url.searchParams.has('hello')) {
+  if (!url.searchParams.has("hello")) {
     response.status = 500;
-      response.statusMessage = "ERROR";
-      response.header = "content-type: text/plain";
-      response.write(`Error`);
-      response.end();
-      return;
+    response.statusMessage = "ERROR";
+    response.header = "content-type: text/plain";
+    response.write(`Error`);
+    response.end();
+    return;
   }
 
   if (url.searchParams.has("hello")) {
@@ -56,3 +79,4 @@ const server = http.createServer((request, response) => {
 server.listen(3003, () => {
   console.log("Сервер запущен по адресу http://127.0.0.1:3003/");
 });
+ */
