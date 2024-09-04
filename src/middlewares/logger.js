@@ -1,6 +1,4 @@
-const logger = (request, repsonse, next) => {
-  console.log("logger");
+exports.loggerMiddleware = (req, res, next) => {
+  console.log(`Request URL: ${req.originalUrl}`);
   next();
 };
-
-module.exports ={ logger};
