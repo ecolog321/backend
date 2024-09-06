@@ -1,58 +1,48 @@
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const morgan = require('morgan');
+const dotenv = require('dotenv');
 
-const getUsers = () => {
-  const filePath = path.join(__dirname, "./data/users.json");
-  return fs.readFileSync(filePath);
-};
+dotenv.config();
 
-const server = http.createServer((request, response) => {
-  const ipAddress = "http://127.0.0.1:3003";
-  const url = new URL(request.url, ipAddress);
-  const userName = url.searchParams.get("hello");
+const userRoutes = require('./routes/users');
+const bookRoutes = require('./routes/books');
+const { errorHandler } = require('./middlewares/error');
+const { loggerMiddleware } = require('./middlewares/logger');
 
-  if (request.url === "/users") {
-    response.status = 200;
-    response.statusMessage = "OK";
-    response.header = "content-type: text/plain";
-    response.write(getUsers());
-    response.end();
-    return;
-  }
+const app = express();
 
-  if (!url.searchParams.has('hello')) {
-    response.status = 500;
-      response.statusMessage = "ERROR";
-      response.header = "content-type: text/plain";
-      response.write(`Error`);
-      response.end();
-      return;
-  }
+const {
+    API_URL='127.0.0.1',
+    PORT=3005,
+    MONGO_URL='mongodb://localhost:27017/mydb'
+} = process.env;
 
-  if (url.searchParams.has("hello")) {
-    if (userName) {
-      response.status = 200;
-      response.statusMessage = "OK";
-      response.header = "content-type: text/plain";
-      response.write(`Hello, ${userName}`);
-      response.end();
-    } else {
-      response.status = 400;
-      response.statusMessage = "OK";
-      response.header = "content-type: text/plain";
-      response.write(`Enter a name`);
-      response.end();
-    }
-  } else {
-    response.status = 200;
-    response.statusMessage = "OK";
-    response.header = "content-type: text/plain";
-    response.write(`Hello worold`);
-    response.end();
-  }
+mongoose.connect(MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+.then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://127.0.0.1:${PORT}`);
+    });
+})
+.catch((error) => {
+    console.error('Database connection error:', error);
 });
 
-server.listen(3003, () => {
-  console.log("Сервер запущен по адресу http://127.0.0.1:3003/");
-});
+// Middleware
+app.use(express.json());
+app.use(cors());
+app.use(morgan('dev'));
+app.use(loggerMiddleware);
+
+// Routes
+app.use('/api/users', userRoutes);
+app.use('/api/books', bookRoutes);
+
+// Error Handling Middleware
+app.use(errorHandler);
+
+module.exports = app;
